@@ -7,15 +7,18 @@ STATIC_LIB = libbus.a
 bin/%.o: src/%.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
-all: static main
+all: static thread_program simple_program
 
 static: $(OBJECTS)
 	ar rcs $(STATIC_LIB) $?
 
-main: static
-	gcc $(CFLAGS) src/main.c libbus.a -Isrc/ -latomic -o $@
+simple_program: static
+	$(CC) $(CFLAGS) examples/simple_program.c libbus.a -Isrc/ -latomic -o $@
+
+thread_program: static
+	$(CC) $(CFLAGS) examples/thread_program.c libbus.a -Isrc/ -latomic -pthread -o $@
 
 clean:
 	rm -f $(OBJECTS)
 	rm -f $(STATIC_LIB)
-	rm -f main
+	rm -f simple_program thread_program

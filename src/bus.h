@@ -1,12 +1,14 @@
 #ifndef _COMBUS
 #define _COMBUS
 
+#include <limits.h>
+
 #define BUS_DEFAULT_CLIENTS    128
 #define BUS_MAX_CLIENTS        UINT_MAX
 
 typedef struct _Bus Bus;
 typedef unsigned int ClientId;
-typedef void (*ClientCallback)(void*, void*);
+typedef void (*ClientCallback)(void* ctx, void* msg);
 
 /*
  * Allocates a new bus. If `num_clients` is non-zero, it allocates space for said number of

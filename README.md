@@ -2,18 +2,27 @@
 A radically lightweight and simple concurrent message bus library.
 
 ## What does it do? ##
-`libbus` provides a shared bus for message passing. Clients can register callbacks to receive messages from the bus. Any user can send a message to all registered clients (broadcast) or to specific ones. It makes use of atomic operations to ensure lock-free synchronization in a mulithreaded environment.
+`libbus` provides a shared bus for message passing. Clients can register callbacks to receive messages from the bus. Any user can send a message to all registered clients (broadcast) or to specific ones. This library makes use of GCC's atomic builtins to ensure lock-free synchronization in a mulithreaded environment.
 
 ## Compiling ##
 Simply use `make static` to compile as a static library. You can use `libbus` from your program by linking it with the library:
 
 `gcc <your_program.c> libbus.a -I<path_to_libbus>/src/ -latomic`.
 
-## Usage ## 
-An example program is provided in [main.c](src/main.c). As mentioned, the library is radically simple. You create a new bus with `bus_new`, register a new client with `bus_register`, send a message with `bus_send`, unregister a client with `bus_unregister` and free the bus with `bus_free`.
+## Usage ##
+
+### Use cases ###
+An example of an use case would be an environment with multiple threads that perform jobs from a queue. With `libbus`, each thread can register a callback that pushes the received message into that thread's queue. In this case, one would set the `ctx` parameter of `bus_register` to point to that thread's queue. This way, threads can send messages to each other, using `bus_send`, just by having a reference to the shared bus.
+
+### Examples ###
+Two example programs are provided:
+* [simple_program.c](examples/simple_program.c) registers two clients, sends a broadcast message, unregisters one of the clients and then sends another broadcast message. Each message is printed to standard output. It can me compiled with `make simple_program`.
+* [thread_program.c](examples/thread_program.c) launches several threads, which send messages to each other and again get printed to standard out. It can me compiled with `make thread_program`.
+
+The main usage flow consists on creating a new bus with `bus_new`, registering callbacks with `bus_register`, sending messages with `bus_send`, unregistering callbacks with `bus_unregister` and deleting the bus with `bus_free`.
 
 ### API ###
-The following documentation can be found in [bus.h](src/bus.h):
+As mentioned, the library is radically simple; there are only 5 functions. The following documentation can be found in [bus.h](src/bus.h):
 
 ```C
 #define BUS_DEFAULT_CLIENTS    128
@@ -21,7 +30,7 @@ The following documentation can be found in [bus.h](src/bus.h):
 
 typedef struct _Bus Bus;
 typedef unsigned int ClientId;
-typedef void (*ClientCallback)(void*, void*);
+typedef void (*ClientCallback)(void* ctx, void* msg);
 
 /*
  * Allocates a new bus. If `num_clients` is non-zero, it allocates space for said number of

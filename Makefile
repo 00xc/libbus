@@ -1,22 +1,25 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Wpedantic -O3 -std=c99 -fPIC
+LDFLAGS = -Isrc/ -latomic
 
 OBJECTS = bin/bus.o
 STATIC_LIB = libbus.a
 
+.PHONY: all static clean
+
 bin/%.o: src/%.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
-all: static thread_program simple_program
+all: static simple_program thread_program
 
 static: $(OBJECTS)
 	ar rcs $(STATIC_LIB) $?
 
-simple_program: static
-	$(CC) $(CFLAGS) examples/simple_program.c libbus.a -Isrc/ -latomic -o $@
+simple_program: examples/simple_program.c static
+	$(CC) $(CFLAGS) $< $(STATIC_LIB) $(LDFLAGS) -o $@
 
-thread_program: static
-	$(CC) $(CFLAGS) examples/thread_program.c libbus.a -Isrc/ -latomic -pthread -o $@
+thread_program: examples/thread_program.c static
+	$(CC) $(CFLAGS) $< $(STATIC_LIB) $(LDFLAGS) -pthread -o $@
 
 clean:
 	rm -f $(OBJECTS)

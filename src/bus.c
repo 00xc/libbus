@@ -14,7 +14,7 @@ struct _Bus {
 	const unsigned int num_clients;
 };
 
-__attribute__ ((warn_unused_result))
+
 int bus_new(Bus** bus, unsigned int num_clients) {
 	Bus* b;
 
@@ -36,7 +36,6 @@ int bus_new(Bus** bus, unsigned int num_clients) {
 	return 1;
 }
 
-__attribute__ ((warn_unused_result))
 int bus_register(Bus* bus, ClientId id, ClientCallback callback, void* ctx) {
 
 	if (id >= bus->num_clients)
@@ -48,7 +47,6 @@ int bus_register(Bus* bus, ClientId id, ClientCallback callback, void* ctx) {
 	return (int) __atomic_compare_exchange(&(bus->clients[id]), &null_client, &new_client, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
 }
 
-__attribute__ ((warn_unused_result))
 int bus_send(Bus* bus, ClientId id, void* msg, int broadcast) {
 	BusClient client;
 
@@ -75,7 +73,6 @@ int bus_send(Bus* bus, ClientId id, void* msg, int broadcast) {
 	return 1;
 }
 
-__attribute__ ((warn_unused_result))
 int bus_unregister(Bus* bus, ClientId id) {
 	BusClient b = {0};
 

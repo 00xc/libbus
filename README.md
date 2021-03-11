@@ -2,7 +2,7 @@
 A radically lightweight and simple concurrent message bus library.
 
 ## What does it do? ##
-`libbus` provides a shared bus for message passing. Clients can register callbacks to receive messages from the bus. Any user can send a message to all registered clients (broadcast) or to specific ones. This library makes use of GCC's atomic builtins to ensure lock-free synchronization in a mulithreaded environment.
+`libbus` provides a shared bus for message passing. Clients can register callbacks to receive messages from the bus. Any user can send a message to all registered clients (broadcast) or to specific ones. This library makes use of GCC's atomic builtins to ensure lock-free synchronization in a mulithreaded environment. More details can be found in [this blog post](https://scavengersecurity.com/a-concurrent-message-passing-library/).
 
 ## Compiling ##
 Simply use `make static` to compile as a static library. You can use `libbus` from your program by linking it with the library:

@@ -12,7 +12,9 @@ bin/%.o: src/%.c
 
 all: static simple_program thread_program
 
-static: $(OBJECTS)
+static: $(STATIC_LIB)
+
+$(STATIC_LIB): $(OBJECTS)
 	ar rcs $(STATIC_LIB) $?
 
 simple_program: examples/simple_program.c static

@@ -26,26 +26,26 @@ int main() {
 
 	/* Register clients with IDs 0 and 1 */
 	if (!bus_register(bus, 0, &callback, &ctx0) || !bus_register(bus, 1, &callback, &ctx1)) {
-		errx(EXIT_FAILURE, "error @ %s:%d: bus_register", __FILE__, __LINE__);
 		bus_free(bus);
+		errx(EXIT_FAILURE, "error @ %s:%d: bus_register", __FILE__, __LINE__);
 	}
 
 	/* Send the message to all registered clients (broadcast=1) - clients 0 and 1 */
 	if (!bus_send(bus, 0, &msg0, 1)) {
-		errx(EXIT_FAILURE, "error @ %s:%d: bus_send", __FILE__, __LINE__);
 		bus_free(bus);
+		errx(EXIT_FAILURE, "error @ %s:%d: bus_send", __FILE__, __LINE__);
 	}
 
 	/* Unregister client with ID = 1 */
 	if (!bus_unregister(bus, 1)) {
+		bus_free(bus);
 		errx(EXIT_FAILURE, "error @ %s:%d: bus_unregister", __FILE__, __LINE__);
-		bus_free(bus);	
 	}
 
 	/* Send the message to all registered clients (broadcast=1) - just client 0 */
 	if (!bus_send(bus, 0, &msg1, 1)) {
-		errx(EXIT_FAILURE, "error @ %s:%d: bus_send", __FILE__, __LINE__);
 		bus_free(bus);
+		errx(EXIT_FAILURE, "error @ %s:%d: bus_send", __FILE__, __LINE__);
 	}
 
 	/* Delete the bus */

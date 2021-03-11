@@ -14,7 +14,6 @@ struct _Bus {
 	const unsigned int num_clients;
 };
 
-
 int bus_new(Bus** bus, unsigned int num_clients) {
 	Bus* b;
 
@@ -41,8 +40,8 @@ int bus_register(Bus* bus, ClientId id, ClientCallback callback, void* ctx) {
 	if (id >= bus->num_clients)
 		return 0;
 
-	BusClient new_client = { .id=id, callback = callback, .ctx = ctx };
 	BusClient null_client = {0};
+	BusClient new_client = { .id=id, .callback = callback, .ctx = ctx };
 
 	return (int) __atomic_compare_exchange(&(bus->clients[id]), &null_client, &new_client, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
 }
@@ -52,11 +51,11 @@ int bus_send(Bus* bus, ClientId id, void* msg, int broadcast) {
 
 	if (broadcast) {
 
-		for (unsigned int i = 0; i < bus->num_clients; ++i) {
-			__atomic_load(&(bus->clients[i]), &client, __ATOMIC_SEQ_CST);
+		for (id = 0; id < bus->num_clients; ++id) {
+			__atomic_load(&(bus->clients[id]), &client, __ATOMIC_SEQ_CST);
 			if (client.callback)
 				client.callback(client.ctx, msg);
-		}		
+		}
 
 	} else {
 
@@ -74,12 +73,13 @@ int bus_send(Bus* bus, ClientId id, void* msg, int broadcast) {
 }
 
 int bus_unregister(Bus* bus, ClientId id) {
-	BusClient b = {0};
 
 	if (id >= bus->num_clients)
 		return 0;
 
-	__atomic_store(&(bus->clients[id]), &b, __ATOMIC_SEQ_CST);
+	BusClient null_client = {0};
+	__atomic_store(&(bus->clients[id]), &null_client, __ATOMIC_SEQ_CST);
+	
 	return 1;
 }
 
@@ -90,6 +90,4 @@ void bus_free(Bus* bus) {
 			free(bus->clients);	
 		free(bus);
 	}
-	
-	return;
 }

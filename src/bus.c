@@ -126,7 +126,7 @@ int bus_unregister(Bus* bus, ClientId id) {
 		 * If CAS succeeds, the client had refcount=0 and got unregistered
 		 * If CAS does not succeed, the value of the client gets copied into `local_client`.
 		 */
-		if (CAS(&(bus->clients[id]), &local_client, &null_client) == 1) {
+		if (CAS(&(bus->clients[id]), &local_client, &null_client)) {
 			return 1;
 		}
 
@@ -139,8 +139,11 @@ int bus_unregister(Bus* bus, ClientId id) {
 void bus_free(Bus* bus) {
 
 	if (bus) {
-		if (bus->clients)
-			free(bus->clients);	
+		if (bus->clients) {
+			free(bus->clients);
+			bus->clients = NULL;
+		}
 		free(bus);
+		bus = NULL;
 	}
 }

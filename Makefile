@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Wpedantic -O3 -std=c99 -fPIC
+CFLAGS = -Wall -Wextra -Wpedantic -Wstrict-aliasing -O3 -std=c99 -fPIC
 LDFLAGS = -Isrc/ -latomic
 
 OBJECTS = bin/bus.o

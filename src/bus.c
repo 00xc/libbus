@@ -93,14 +93,14 @@ int bus_send(Bus* bus, ClientId id, void* msg, int broadcast) {
 			attempt_client_callback(&(bus->clients[id]), msg);
 		}
 
+		return 1;
+
 	} else {
 
 		if (id >= bus->num_clients)
 			return 0;
 		return attempt_client_callback(&(bus->clients[id]), msg);
 	}
-
-	return 1;
 }
 
 int bus_unregister(Bus* bus, ClientId id) {

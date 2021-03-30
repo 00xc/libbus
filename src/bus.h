@@ -3,6 +3,15 @@
 
 #include <limits.h>
 
+/* Avoid using GCC attributes if we're not compiling with GCC */
+#ifdef __GNUC__
+#	define ATTRIBUTE1(x)    __attribute__((x))
+#	define ATTRIBUTE2(x, y) __attribute__((x, y))
+#else
+#	define ATTRIBUTE1(x)
+#	define ATTRIBUTE2(x,y)
+#endif
+
 #define BUS_DEFAULT_CLIENTS    128
 #define BUS_MAX_CLIENTS        UINT_MAX
 
@@ -16,18 +25,17 @@ typedef void (*ClientCallback)(void* ctx, void* msg);
  * `BUS_MAX_CLIENTS`.
  * Returns 1 on success, 0 on failure.
  */
-int bus_new(Bus** bus, unsigned int num_clients) __attribute__((warn_unused_result));
+int ATTRIBUTE1(warn_unused_result) bus_new(Bus** bus, unsigned int num_clients);
 
 /* 
  * Registers a new client with the specified ID. The ID must satisfy 0 <= ID < `num_clients` and
  * not be in use; otherwise the function fails.
  * Whenever a message is sent to this client, `callback` will be called.
- * The first argument for `callback` will the the user supplied context, `ctx` (can be ommitted
- * by passing NULL).
- * The second argument for `callback` will be the received message.
+ * The first argument for `callback` is the the user-supplied context, `ctx` (can be ommitted
+ * by passing NULL). The second argument for `callback` will be the received message.
  * Returns 1 on success, 0 on failure.
  */
-int bus_register(Bus* bus, ClientId id, ClientCallback callback, void* ctx) __attribute__((warn_unused_result));
+int ATTRIBUTE2(warn_unused_result, nonnull(1)) bus_register(Bus* bus, ClientId id, ClientCallback callback, void* ctx);
 
 /*
  * If broadcast is set to 0, it sends a message to the client with the specified ID.
@@ -35,13 +43,13 @@ int bus_register(Bus* bus, ClientId id, ClientCallback callback, void* ctx) __at
  * ignored.
  * Returns 1 on success, 0 on failure.
  */
-int bus_send(Bus* bus, ClientId id, void* msg, int broadcast) __attribute__((warn_unused_result));
+int ATTRIBUTE2(warn_unused_result, nonnull(1)) bus_send(Bus* bus, ClientId id, void* msg, int broadcast);
 
 /*
- * Unregisters the client with the specified ID.
+ * Unregisters the client with the specified ID. No additional can be made to the specified client.
  * Returns 1 on success, 0 on failure.
  */
-int bus_unregister(Bus* bus, ClientId id) __attribute__ ((warn_unused_result));
+int ATTRIBUTE2(warn_unused_result, nonnull(1)) bus_unregister(Bus* bus, ClientId id);
 
 /*
  * Frees the bus object.

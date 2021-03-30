@@ -59,14 +59,14 @@ int main() {
 		contexts[i].id = i;
 
 		if (pthread_create(&threads[i], NULL, thread_fn, &contexts[i])){
-			fprintf(stderr, "Error creating thread %d\n", i);
+			fprintf(stderr, "error @ %s:%d: pthread_create (iteration %d)\n", __FILE__, __LINE__, i);
 		}
 	}
 
 	/* Wait until completion */
 	for (i=0; i<NUM_THREADS; ++i) {
 		if (pthread_join(threads[i], NULL) != 0) {
-			fprintf(stderr, "Error joining thread %d\n", i);	
+			fprintf(stderr, "error @ %s:%d: pthread_join (iteration %d)\n", __FILE__, __LINE__, i);
 		}
 	}
 

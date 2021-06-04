@@ -34,7 +34,7 @@ void* thread_fn(void* _data) {
 	printf("Registered callback from thread %d\n", data->id);
 
 	/* Loop until the destination is registered from a separate thread */
-	while (!bus_send(data->bus, dest, &(data->id), 0)) {
+	while (!bus_send(data->bus, dest, &(data->id), 1, 0)) {
 		;;
 	}
 

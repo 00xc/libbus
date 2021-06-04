@@ -31,7 +31,7 @@ int main() {
 	}
 
 	/* Send the message to all registered clients (broadcast=1) - clients 0 and 1 */
-	if (!bus_send(bus, 0, &msg0, 1)) {
+	if (!bus_send(bus, 0, &msg0, 1, 1)) {
 		bus_free(bus);
 		errx(EXIT_FAILURE, "error @ %s:%d: bus_send", __FILE__, __LINE__);
 	}
@@ -43,7 +43,7 @@ int main() {
 	}
 
 	/* Send the message to all registered clients (broadcast=1) - just client 0 */
-	if (!bus_send(bus, 0, &msg1, 1)) {
+	if (!bus_send(bus, 0, &msg1, 1, 1)) {
 		bus_free(bus);
 		errx(EXIT_FAILURE, "error @ %s:%d: bus_send", __FILE__, __LINE__);
 	}

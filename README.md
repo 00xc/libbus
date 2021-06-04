@@ -55,9 +55,13 @@ int bus_register(Bus* bus, ClientId id, ClientCallback callback, void* ctx);
  * If broadcast is set to 0, it sends a message to the client with the specified ID.
  * If broadcast is set to 1, the message is sent to every registered client, and the supplied ID is
  * ignored.
+ * If `block` is set to 1, it tries to send the message until it succeeds or the target gets
+ * unregistered.
+ * If `block` is set to 0, it tries once to send the message, failing if the call would block or
+ * the target gets unregistered.
  * Returns 1 on success, 0 on failure.
  */
-int bus_send(Bus* bus, ClientId id, void* msg, int broadcast);
+int bus_send(Bus* bus, ClientId id, void* msg, int block, int broadcast);
 
 /*
  * Unregisters the client with the specified ID.

@@ -19,10 +19,10 @@ struct _Bus {
 };
 
 /*
- * Attempts to call a client's callback to send a message. Might fail if such client gets
- * unregistered while attempting to send the message.
+ * Tries to call a client's callback in a loop until it succeeds or it gets unregistered.
+ * Returns 1 on success, 0 on failure.
  */
-static int attempt_client_callback(BusClient* client, void* msg) {
+static int spin_client_callback(BusClient* client, void* msg) {
 	BusClient local_client, new_client;
 
 	/* Load the client we are attempting to communicate with */
@@ -38,6 +38,8 @@ static int attempt_client_callback(BusClient* client, void* msg) {
 		/*
 		 * If CAS succeeds, the client had the expected refcount, and we updated it successfully.
 		 * If CAS fails, the client was updated recently. The actual value is copied to `local_client`.
+		 * We must to update the client this way (instead of using `__atomic_fetch_sub` directly) because
+		 * we need to make sure that is still registered by the time we update the refcount.
 		 */
 		if (CAS(client, &local_client, &new_client)) {
 
@@ -50,6 +52,30 @@ static int attempt_client_callback(BusClient* client, void* msg) {
 	}
 
 	/* Client was not registered, or got unregistered while we attempted to send a message */
+	return 0;
+}
+
+/*
+ * Attempts once to call a client's callback to send a message.
+ * Returns 1 on success, 0 on failure.
+ */
+static int attempt_client_callback(BusClient* client, void* msg) {
+	BusClient local_client, new_client;
+
+	__atomic_load(client, &local_client, __ATOMIC_SEQ_CST);
+
+	if (local_client.registered) {
+
+		new_client = local_client;
+		++(new_client.refcount);
+
+		if (CAS(client, &local_client, &new_client)) {
+			local_client.callback(local_client.ctx, msg);
+			__atomic_fetch_sub(&(client->refcount), 1, __ATOMIC_SEQ_CST);
+			return 1;
+		}
+	}
+
 	return 0;
 }
 
@@ -85,22 +111,28 @@ int bus_register(Bus* bus, ClientId id, ClientCallback callback, void* ctx) {
 	return (int) CAS(&(bus->clients[id]), &null_client, &new_client);
 }
 
-int bus_send(Bus* bus, ClientId id, void* msg, int broadcast) {
+int bus_send(Bus* bus, ClientId id, void* msg, int block, int broadcast) {
 
 	if (broadcast) {
 
-		for (id = 0; id < bus->num_clients; ++id) {
-			attempt_client_callback(&(bus->clients[id]), msg);
+		if (block) {
+			for (id = 0; id < bus->num_clients; ++id) 
+				spin_client_callback(&(bus->clients[id]), msg);
+		} else {
+			for (id = 0; id < bus->num_clients; ++id) 
+				attempt_client_callback(&(bus->clients[id]), msg);
 		}
 
 		return 1;
-
-	} else {
-
-		if (id >= bus->num_clients)
-			return 0;
-		return attempt_client_callback(&(bus->clients[id]), msg);
 	}
+
+	if (id >= bus->num_clients)
+		return 0;
+
+	if (block)
+		return spin_client_callback(&(bus->clients[id]), msg);
+	return attempt_client_callback(&(bus->clients[id]), msg);
+
 }
 
 int bus_unregister(Bus* bus, ClientId id) {

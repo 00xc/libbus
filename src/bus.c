@@ -111,16 +111,18 @@ int bus_register(Bus* bus, ClientId id, ClientCallback callback, void* ctx) {
 	return (int) CAS(&(bus->clients[id]), &null_client, &new_client);
 }
 
-int bus_send(Bus* bus, ClientId id, void* msg, int block, int broadcast) {
+int bus_send(Bus* bus, ClientId id, void* msg, int flags) {
+	int (*msg_fn)(BusClient*, void*);
 
-	if (broadcast) {
+	if (flags & BUS_NOBLOCK)
+		msg_fn = attempt_client_callback;
+	else
+		msg_fn = spin_client_callback;
 
-		if (block) {
-			for (id = 0; id < bus->num_clients; ++id) 
-				spin_client_callback(&(bus->clients[id]), msg);
-		} else {
-			for (id = 0; id < bus->num_clients; ++id) 
-				attempt_client_callback(&(bus->clients[id]), msg);
+	if (flags & BUS_BROADCAST) {
+
+		for (id = 0; id < bus->num_clients; ++id) {
+			msg_fn(&(bus->clients[id]), msg);
 		}
 
 		return 1;
@@ -129,10 +131,7 @@ int bus_send(Bus* bus, ClientId id, void* msg, int block, int broadcast) {
 	if (id >= bus->num_clients)
 		return 0;
 
-	if (block)
-		return spin_client_callback(&(bus->clients[id]), msg);
-	return attempt_client_callback(&(bus->clients[id]), msg);
-
+	return msg_fn(&(bus->clients[id]), msg);
 }
 
 int bus_unregister(Bus* bus, ClientId id) {

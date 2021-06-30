@@ -30,8 +30,8 @@ int main() {
 		errx(EXIT_FAILURE, "error @ %s:%d: bus_register", __FILE__, __LINE__);
 	}
 
-	/* Send the message to all registered clients (broadcast=1) - clients 0 and 1 */
-	if (!bus_send(bus, 0, &msg0, 1, 1)) {
+	/* Send the message to all registered clients (0 and 1) */
+	if (!bus_send(bus, 0, &msg0, BUS_BROADCAST)) {
 		bus_free(bus);
 		errx(EXIT_FAILURE, "error @ %s:%d: bus_send", __FILE__, __LINE__);
 	}
@@ -42,8 +42,8 @@ int main() {
 		errx(EXIT_FAILURE, "error @ %s:%d: bus_unregister", __FILE__, __LINE__);
 	}
 
-	/* Send the message to all registered clients (broadcast=1) - just client 0 */
-	if (!bus_send(bus, 0, &msg1, 1, 1)) {
+	/* Send the message to all registered clients (just client 0) */
+	if (!bus_send(bus, 0, &msg1, BUS_BROADCAST)) {
 		bus_free(bus);
 		errx(EXIT_FAILURE, "error @ %s:%d: bus_send", __FILE__, __LINE__);
 	}

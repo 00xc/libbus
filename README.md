@@ -60,7 +60,7 @@ int bus_register(Bus* bus, ClientId id, ClientCallback callback, void* ctx);
  * the `id` parameter will be ignored. Always succeeds.
  * Returns 1 on success, 0 on failure.
  */
-int bus_send(Bus* bus, ClientId id, void* msg, int block, int broadcast);
+int bus_send(Bus* bus, ClientId id, void* msg, int flags);
 
 /*
  * Unregisters the client with the specified ID. No messages can be sent to the specified client
